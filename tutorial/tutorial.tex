@@ -1,0 +1,747 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage[a4paper, margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true, linkcolor=azul, urlcolor=azul]{hyperref}
+
+\definecolor{azul}{HTML}{1F4E8B}
+\definecolor{cinzaCode}{HTML}{F4F4F4}
+\definecolor{verdeOk}{HTML}{1B7F3A}
+\definecolor{laranjaWarn}{HTML}{B86A00}
+\definecolor{vermelhoErr}{HTML}{B23A48}
+\definecolor{comentario}{HTML}{6A737D}
+\definecolor{keyword}{HTML}{0033B3}
+\definecolor{string}{HTML}{B23A48}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with, let, const, async, await, of, import, export, from, class, extends, super},
+  morekeywords=[2]{document, window, console},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`,
+}
+
+\lstdefinelanguage{HTML5}{
+  language=HTML,
+  morekeywords={meta,charset,article,header,main,section,nav,aside,footer,figure,figcaption},
+  alsoletter={-},
+}
+
+\lstdefinelanguage{CSS}{
+  morekeywords={color,background,font,padding,margin,border,width,height,display,position,top,left,right,bottom,flex,grid,box-sizing,border-radius,box-shadow,text-align,font-family,font-size,font-weight,cursor},
+  sensitive=false,
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  alsoletter={-},
+}
+
+\lstdefinestyle{codigo}{
+  backgroundcolor=\color{cinzaCode},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{keyword}\bfseries,
+  commentstyle=\color{comentario}\itshape,
+  stringstyle=\color{string},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  frame=single,
+  rulecolor=\color{gray!40},
+  framesep=6pt,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  captionpos=b,
+  literate=
+    {á}{{\'a}}1 {à}{{\`a}}1 {ã}{{\~a}}1 {â}{{\^a}}1 {ä}{{\"a}}1
+    {é}{{\'e}}1 {ê}{{\^e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ô}{{\^o}}1
+    {õ}{{\~o}}1 {ú}{{\'u}}1 {ç}{{\c{c}}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {Ç}{{\c{C}}}1
+}
+\lstset{style=codigo}
+
+\newtcolorbox{caixa-dica}{
+  colback=blue!4, colframe=azul, boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=4pt, bottom=4pt,
+  title=\textbf{Dica}, fonttitle=\color{white}
+}
+
+\newtcolorbox{caixa-atencao}{
+  colback=orange!6, colframe=laranjaWarn, boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=4pt, bottom=4pt,
+  title=\textbf{Atenção}, fonttitle=\color{white}
+}
+
+\newtcolorbox{caixa-pratica}{
+  colback=green!4, colframe=verdeOk, boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=4pt, bottom=4pt,
+  title=\textbf{Pratique}, fonttitle=\color{white}
+}
+
+\titleformat{\section}{\Large\bfseries\color{azul}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{azul!85!black}}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{azul}DSW --- CRUD de Produtos}
+\fancyhead[R]{\small UNEMAT 2026.1}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\title{\vspace{-1.5cm}
+  \color{azul}\Huge Tutorial Prático\\
+  \LARGE CRUD de Produtos com Express, Bun e MySQL
+}
+\author{\large Prof. Ivan Luiz Pedroso Pires\\\small Desenvolvimento de Software para Web --- UNEMAT}
+\date{\large 01 de junho de 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\begin{abstract}
+\noindent Neste tutorial você vai construir uma aplicação \textbf{CRUD} (Create, Read, Update, Delete) completa de produtos. O \textbf{backend} usa \texttt{Express.js} rodando no \texttt{Bun}, com banco \texttt{MySQL} acessado pelo \texttt{mysql2}, organizado no padrão \textbf{Routes e Controllers}. O \textbf{frontend} é \texttt{HTML} puro com \texttt{JavaScript} usando \texttt{fetch}. Duração estimada: \textbf{2h30}.
+\end{abstract}
+
+\tableofcontents
+\vspace{0.5cm}
+\hrule
+\vspace{0.5cm}
+
+% ============================================================
+\section{Pré-requisitos}
+% ============================================================
+
+Antes de começar, confirme que você tem instalado:
+
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item \textbf{Bun} (\url{https://bun.sh}) --- runtime JavaScript
+  \item \textbf{MySQL Server} rodando em \texttt{localhost:3306}
+  \item \textbf{Editor de código} (VS Code recomendado)
+  \item \textbf{Navegador} moderno (Chrome, Firefox ou Edge)
+  \item Cliente HTTP opcional: \textbf{Insomnia} ou \textbf{Thunder Client}
+\end{itemize}
+
+Teste no terminal:
+
+\begin{lstlisting}[language=bash]
+bun --version
+mysql --version
+\end{lstlisting}
+
+\begin{caixa-atencao}
+Se algum comando não for reconhecido, instale antes de continuar. Bun: \texttt{curl -fsSL https://bun.sh/install | bash}.
+\end{caixa-atencao}
+
+% ============================================================
+\section{Visão geral do projeto}
+% ============================================================
+
+Vamos construir duas partes que se comunicam por HTTP:
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Frontend (porta livre)} & \textbf{Backend (porta 3000)} \\
+\midrule
+\texttt{index.html}            & \texttt{server.js} \\
+\texttt{style.css}             & \texttt{routes/produtoRoutes.js} \\
+\texttt{script.js} (fetch)     & \texttt{controllers/produtoController.js} \\
+                               & \texttt{config/database.js} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Fluxo de uma requisição}:
+
+\begin{center}
+\texttt{Browser} $\rightarrow$ \texttt{fetch()} $\rightarrow$ \texttt{Express} $\rightarrow$ \texttt{Route} $\rightarrow$ \texttt{Controller} $\rightarrow$ \texttt{MySQL}
+\end{center}
+
+\textbf{Estrutura final de pastas}:
+
+\begin{lstlisting}[language=bash]
+01-06-2025/
+|-- backend/
+|   |-- database.sql
+|   |-- package.json
+|   `-- src/
+|       |-- config/database.js
+|       |-- controllers/produtoController.js
+|       |-- routes/produtoRoutes.js
+|       `-- server.js
+`-- frontend/
+    |-- index.html
+    |-- style.css
+    `-- script.js
+\end{lstlisting}
+
+% ============================================================
+\section{Passo 1 --- Criar o banco de dados}
+% ============================================================
+
+Acesse o MySQL e crie a tabela \texttt{produtos}.
+
+\begin{lstlisting}[language=SQL, caption={\texttt{backend/database.sql}}]
+CREATE DATABASE IF NOT EXISTS dsw_crud;
+USE dsw_crud;
+
+CREATE TABLE IF NOT EXISTS produtos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  preco DECIMAL(10,2) NOT NULL,
+  estoque INT NOT NULL DEFAULT 0,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO produtos (nome, preco, estoque) VALUES
+  ('Caneta Azul', 2.50, 100),
+  ('Caderno 96 folhas', 15.90, 50),
+  ('Borracha', 1.20, 200);
+\end{lstlisting}
+
+Execute o script:
+
+\begin{lstlisting}[language=bash]
+mysql -u root -p < backend/database.sql
+\end{lstlisting}
+
+Valide criando a tabela:
+
+\begin{lstlisting}[language=SQL]
+USE dsw_crud;
+SELECT * FROM produtos;
+\end{lstlisting}
+
+\begin{caixa-dica}
+A coluna \texttt{id} é \texttt{AUTO\_INCREMENT}: o MySQL gera o número sozinho. Nunca passe \texttt{id} no \texttt{INSERT}.
+\end{caixa-dica}
+
+% ============================================================
+\section{Passo 2 --- Inicializar o backend com Bun}
+% ============================================================
+
+Crie as pastas e o \texttt{package.json}:
+
+\begin{lstlisting}[language=bash]
+mkdir -p backend/src/{config,controllers,routes}
+cd backend
+bun init -y
+\end{lstlisting}
+
+Edite o \texttt{package.json} ficando assim:
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{backend/package.json}}]
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/server.js",
+    "start": "bun src/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mysql2": "^3.11.5"
+  }
+}
+\end{lstlisting}
+
+Instale as dependências:
+
+\begin{lstlisting}[language=bash]
+bun install
+\end{lstlisting}
+
+\begin{caixa-atencao}
+O campo \texttt{"type": "module"} permite usar \texttt{import/export} em vez de \texttt{require}.
+\end{caixa-atencao}
+
+% ============================================================
+\section{Passo 3 --- Conexão com o MySQL}
+% ============================================================
+
+Crie um \textbf{pool de conexões} (mais eficiente que abrir/fechar a cada query).
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{backend/src/config/database.js}}]
+import mysql from 'mysql2/promise';
+
+const pool = mysql.createPool({
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: '',
+  database: 'dsw_crud',
+  waitForConnections: true,
+  connectionLimit: 10,
+});
+
+export default pool;
+\end{lstlisting}
+
+\begin{caixa-dica}
+Use \texttt{mysql2/promise}: permite \texttt{await} nas queries em vez de callbacks aninhados.
+\end{caixa-dica}
+
+% ============================================================
+\section{Passo 4 --- Controller de Produtos}
+% ============================================================
+
+O \textbf{controller} contém a lógica do CRUD. Cada função recebe \texttt{(req, res)} e responde JSON.
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{backend/src/controllers/produtoController.js (parte 1)}}]
+import db from '../config/database.js';
+
+export const listar = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM produtos ORDER BY id DESC'
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+};
+
+export const buscarPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [rows] = await db.query(
+      'SELECT * FROM produtos WHERE id = ?', [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ erro: 'Produto nao encontrado' });
+    }
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+};
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{produtoController.js (parte 2 --- escrita)}}]
+export const criar = async (req, res) => {
+  try {
+    const { nome, preco, estoque } = req.body;
+    if (!nome || preco == null) {
+      return res.status(400).json({ erro: 'Nome e preco obrigatorios' });
+    }
+    const [result] = await db.query(
+      'INSERT INTO produtos (nome, preco, estoque) VALUES (?, ?, ?)',
+      [nome, preco, estoque ?? 0]
+    );
+    res.status(201).json({
+      id: result.insertId, nome, preco, estoque: estoque ?? 0
+    });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+};
+
+export const atualizar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, preco, estoque } = req.body;
+    const [result] = await db.query(
+      'UPDATE produtos SET nome=?, preco=?, estoque=? WHERE id=?',
+      [nome, preco, estoque, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ erro: 'Produto nao encontrado' });
+    }
+    res.json({ id: Number(id), nome, preco, estoque });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+};
+
+export const deletar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query(
+      'DELETE FROM produtos WHERE id = ?', [id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ erro: 'Produto nao encontrado' });
+    }
+    res.json({ mensagem: 'Produto removido com sucesso' });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+};
+\end{lstlisting}
+
+\begin{caixa-atencao}
+\textbf{Sempre use \texttt{?} (prepared statements)} para inserir variáveis nas queries. Concatenação direta abre brecha para \textbf{SQL Injection}.
+\end{caixa-atencao}
+
+% ============================================================
+\section{Passo 5 --- Rotas de Produtos}
+% ============================================================
+
+As \textbf{rotas} só declaram qual URL e método HTTP chamam qual função do controller.
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{backend/src/routes/produtoRoutes.js}}]
+import { Router } from 'express';
+import {
+  listar,
+  buscarPorId,
+  criar,
+  atualizar,
+  deletar,
+} from '../controllers/produtoController.js';
+
+const router = Router();
+
+router.get('/', listar);
+router.get('/:id', buscarPorId);
+router.post('/', criar);
+router.put('/:id', atualizar);
+router.delete('/:id', deletar);
+
+export default router;
+\end{lstlisting}
+
+\textbf{Mapa de endpoints} (combinando o prefixo definido no \texttt{server.js}):
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Método} & \textbf{URL} & \textbf{Função} \\
+\midrule
+GET    & \texttt{/produtos}     & listar todos \\
+GET    & \texttt{/produtos/:id} & buscar um \\
+POST   & \texttt{/produtos}     & criar \\
+PUT    & \texttt{/produtos/:id} & atualizar \\
+DELETE & \texttt{/produtos/:id} & deletar \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{Passo 6 --- Servidor Express}
+% ============================================================
+
+O \texttt{server.js} amarra tudo: aplica middlewares, registra rotas, sobe o servidor.
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{backend/src/server.js}}]
+import express from 'express';
+import cors from 'cors';
+import produtoRoutes from './routes/produtoRoutes.js';
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/produtos', produtoRoutes);
+
+app.get('/', (req, res) => {
+  res.json({ mensagem: 'API do CRUD de Produtos rodando' });
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+});
+\end{lstlisting}
+
+Rode o servidor:
+
+\begin{lstlisting}[language=bash]
+bun run dev
+\end{lstlisting}
+
+Você deve ver: \texttt{\color{verdeOk}Servidor rodando em http://localhost:3000}.
+
+\begin{caixa-dica}
+\textbf{Middlewares importam}:
+\begin{itemize}
+  \item \texttt{cors()}: libera chamadas do frontend (origem diferente).
+  \item \texttt{express.json()}: faz o parse do corpo JSON das requisições.
+\end{itemize}
+A \textbf{ordem} é importante: middlewares antes das rotas.
+\end{caixa-dica}
+
+% ============================================================
+\section{Passo 7 --- Testar a API}
+% ============================================================
+
+Antes de codar o frontend, valide a API. No Insomnia/Thunder Client:
+
+\begin{enumerate}[itemsep=2pt]
+  \item \textbf{GET} \texttt{http://localhost:3000/produtos} $\rightarrow$ deve retornar a lista.
+  \item \textbf{POST} \texttt{http://localhost:3000/produtos} com corpo JSON:
+\begin{lstlisting}[language=JavaScript]
+{ "nome": "Régua 30cm", "preco": 4.50, "estoque": 30 }
+\end{lstlisting}
+  \item \textbf{PUT} \texttt{http://localhost:3000/produtos/1} com novos dados.
+  \item \textbf{DELETE} \texttt{http://localhost:3000/produtos/1}.
+\end{enumerate}
+
+\begin{caixa-pratica}
+Crie 3 produtos novos via POST e confirme que aparecem no GET. Atualize um deles e depois apague.
+\end{caixa-pratica}
+
+% ============================================================
+\section{Passo 8 --- HTML do frontend}
+% ============================================================
+
+\begin{lstlisting}[language=HTML, caption={\texttt{frontend/index.html}}]
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD de Produtos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Cadastro de Produtos</h1>
+
+  <form id="form-produto">
+    <input type="hidden" id="produto-id">
+    <label>Nome: <input type="text" id="nome" required></label>
+    <label>Preco: <input type="number" id="preco" step="0.01" required></label>
+    <label>Estoque: <input type="number" id="estoque" value="0" required></label>
+    <div class="botoes">
+      <button type="submit" id="btn-salvar">Salvar</button>
+      <button type="button" id="btn-cancelar" hidden>Cancelar</button>
+    </div>
+  </form>
+
+  <h2>Lista de Produtos</h2>
+  <table id="tabela-produtos">
+    <thead>
+      <tr>
+        <th>ID</th><th>Nome</th><th>Preco</th>
+        <th>Estoque</th><th>Acoes</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
+\end{lstlisting}
+
+% ============================================================
+\section{Passo 9 --- JavaScript do frontend}
+% ============================================================
+
+Usamos a \texttt{Fetch API} para conversar com o backend.
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{frontend/script.js (parte 1)}}]
+const API = 'http://localhost:3000/produtos';
+
+const form = document.getElementById('form-produto');
+const inputId = document.getElementById('produto-id');
+const inputNome = document.getElementById('nome');
+const inputPreco = document.getElementById('preco');
+const inputEstoque = document.getElementById('estoque');
+const btnCancelar = document.getElementById('btn-cancelar');
+const tbody = document.querySelector('#tabela-produtos tbody');
+
+function criarCelula(texto) {
+  const td = document.createElement('td');
+  td.textContent = texto;
+  return td;
+}
+
+function criarBotao(rotulo, classe, id) {
+  const botao = document.createElement('button');
+  botao.textContent = rotulo;
+  botao.className = classe;
+  botao.dataset.id = id;
+  return botao;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, caption={\texttt{script.js (parte 2 --- CRUD)}}]
+async function listarProdutos() {
+  const resposta = await fetch(API);
+  const produtos = await resposta.json();
+  tbody.replaceChildren();
+  produtos.forEach((p) => {
+    const tr = document.createElement('tr');
+    tr.append(
+      criarCelula(p.id),
+      criarCelula(p.nome),
+      criarCelula(`R$ ${Number(p.preco).toFixed(2)}`),
+      criarCelula(p.estoque),
+    );
+    const tdAcoes = document.createElement('td');
+    tdAcoes.append(
+      criarBotao('Editar', 'btn-editar', p.id),
+      criarBotao('Excluir', 'btn-excluir', p.id),
+    );
+    tr.append(tdAcoes);
+    tbody.append(tr);
+  });
+}
+
+async function salvarProduto(evento) {
+  evento.preventDefault();
+  const dados = {
+    nome: inputNome.value,
+    preco: parseFloat(inputPreco.value),
+    estoque: parseInt(inputEstoque.value, 10),
+  };
+  const id = inputId.value;
+  const url = id ? `${API}/${id}` : API;
+  const metodo = id ? 'PUT' : 'POST';
+  await fetch(url, {
+    method: metodo,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dados),
+  });
+  resetarFormulario();
+  listarProdutos();
+}
+
+async function editarProduto(id) {
+  const resposta = await fetch(`${API}/${id}`);
+  const produto = await resposta.json();
+  inputId.value = produto.id;
+  inputNome.value = produto.nome;
+  inputPreco.value = produto.preco;
+  inputEstoque.value = produto.estoque;
+  btnCancelar.hidden = false;
+}
+
+async function excluirProduto(id) {
+  if (!confirm('Deseja excluir este produto?')) return;
+  await fetch(`${API}/${id}`, { method: 'DELETE' });
+  listarProdutos();
+}
+
+function resetarFormulario() {
+  form.reset();
+  inputId.value = '';
+  inputEstoque.value = '0';
+  btnCancelar.hidden = true;
+}
+
+form.addEventListener('submit', salvarProduto);
+btnCancelar.addEventListener('click', resetarFormulario);
+
+tbody.addEventListener('click', (evento) => {
+  const id = evento.target.dataset.id;
+  if (!id) return;
+  if (evento.target.classList.contains('btn-editar')) editarProduto(id);
+  else if (evento.target.classList.contains('btn-excluir')) excluirProduto(id);
+});
+
+listarProdutos();
+\end{lstlisting}
+
+\begin{caixa-atencao}
+Use \texttt{textContent} e \texttt{createElement} ao invés de \texttt{innerHTML} para evitar \textbf{XSS} (cross-site scripting) quando exibir dados vindos da API.
+\end{caixa-atencao}
+
+% ============================================================
+\section{Passo 10 --- CSS mínimo}
+% ============================================================
+
+\begin{lstlisting}[language=CSS, caption={\texttt{frontend/style.css (resumido)}}]
+* { box-sizing: border-box; }
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 800px; margin: 2rem auto; padding: 0 1rem;
+  background: #f5f5f5; color: #222;
+}
+form, table {
+  background: #fff; border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+form { padding: 1.5rem; margin-bottom: 2rem; }
+form input { width: 100%; padding: .5rem; margin-top: .25rem; }
+button { padding: .5rem 1rem; border: none; border-radius: 4px; cursor: pointer; }
+#btn-salvar  { background: #2563eb; color: #fff; }
+.btn-editar  { background: #f59e0b; color: #fff; }
+.btn-excluir { background: #dc2626; color: #fff; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .75rem; text-align: left; border-bottom: 1px solid #eee; }
+\end{lstlisting}
+
+% ============================================================
+\section{Passo 11 --- Rodar tudo junto}
+% ============================================================
+
+\begin{enumerate}[itemsep=2pt]
+  \item Em um terminal: \texttt{cd backend \&\& bun run dev}.
+  \item Abra \texttt{frontend/index.html} no navegador (botão direito $\rightarrow$ \emph{Open with Live Server} no VS Code é o ideal).
+  \item Cadastre, edite e exclua produtos. Veja a lista atualizar.
+\end{enumerate}
+
+\begin{caixa-pratica}
+Confira no DevTools (F12) $\rightarrow$ \emph{Network}: cada ação dispara uma requisição diferente para a API.
+\end{caixa-pratica}
+
+% ============================================================
+\section{Resolução de problemas comuns}
+% ============================================================
+
+\begin{description}[leftmargin=*, itemsep=4pt]
+  \item[\textcolor{vermelhoErr}{ERR\_CONNECTION\_REFUSED}] Backend não está rodando. Volte ao terminal e suba com \texttt{bun run dev}.
+  \item[\textcolor{vermelhoErr}{CORS blocked}] Faltou \texttt{app.use(cors())} antes das rotas no \texttt{server.js}.
+  \item[\textcolor{vermelhoErr}{ER\_ACCESS\_DENIED}] Usuário/senha errados em \texttt{config/database.js}.
+  \item[\textcolor{vermelhoErr}{ER\_BAD\_DB\_ERROR}] Banco \texttt{dsw\_crud} não existe. Rode o \texttt{database.sql}.
+  \item[\textcolor{vermelhoErr}{Cannot read properties of undefined}] Esqueceu \texttt{express.json()} --- \texttt{req.body} fica vazio.
+  \item[\textcolor{vermelhoErr}{Tabela não atualiza}] Verifique se a função \texttt{listarProdutos()} é chamada após cada POST/PUT/DELETE.
+\end{description}
+
+% ============================================================
+\section{Desafio final}
+% ============================================================
+
+\begin{caixa-pratica}
+\textbf{Adicione um campo \texttt{categoria} (VARCHAR 50)} ao produto. Para isso você precisa:
+\begin{enumerate}[itemsep=2pt]
+  \item Alterar a tabela: \texttt{ALTER TABLE produtos ADD categoria VARCHAR(50);}
+  \item Atualizar as queries de \texttt{INSERT} e \texttt{UPDATE} no controller.
+  \item Adicionar o campo no formulário HTML.
+  \item Adicionar o campo no objeto \texttt{dados} do \texttt{salvarProduto}.
+  \item Adicionar a coluna na tabela do frontend.
+\end{enumerate}
+Repare como uma única feature toca \textbf{quatro camadas}: banco, controller, HTML e JS.
+\end{caixa-pratica}
+
+% ============================================================
+\section{Checklist de entrega}
+% ============================================================
+
+\begin{itemize}[label=$\square$, itemsep=2pt]
+  \item Banco \texttt{dsw\_crud} criado com a tabela \texttt{produtos}.
+  \item Backend rodando em \texttt{localhost:3000} sem erros.
+  \item Endpoint \texttt{GET /produtos} retorna JSON.
+  \item Frontend lista, cria, edita e exclui produtos.
+  \item Estrutura \texttt{routes/} + \texttt{controllers/} + \texttt{config/} respeitada.
+  \item Campo \texttt{categoria} (desafio) implementado.
+\end{itemize}
+
+\vspace{0.6cm}
+\hrule
+\vspace{0.3cm}
+\begin{center}\small
+\textit{Bom código!} --- Prof. Ivan Pires \\
+\texttt{ivan.pires@unemat.br} --- DSW 2026.1
+\end{center}
+
+\end{document}

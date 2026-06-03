@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD - Produtos e Livros</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== SEÇÃO PRODUTOS ===== -->
+  <h1>Cadastro de Produtos</h1>
+
+  <form id="form-produto">
+    <input type="hidden" id="produto-id">
+    <label>Nome: <input type="text" id="nome" required></label>
+    <label>Preço: <input type="number" id="preco" step="0.01" required></label>
+    <label>Estoque: <input type="number" id="estoque" value="0" required></label>
+    <div class="botoes">
+      <button type="submit" id="btn-salvar">Salvar</button>
+      <button type="button" id="btn-cancelar" hidden>Cancelar</button>
+    </div>
+  </form>
+
+  <h2>Lista de Produtos</h2>
+  <table id="tabela-produtos">
+    <thead>
+      <tr>
+        <th>ID</th><th>Nome</th><th>Preço</th><th>Estoque</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <hr>
+
+  <!-- ===== SEÇÃO LIVROS ===== -->
+  <h1>Cadastro de Livros</h1>
+
+  <form id="form-livro">
+    <input type="hidden" id="livro-id">
+    <label>Título: <input type="text" id="titulo" required></label>
+    <label>Autor: <input type="text" id="autor" required></label>
+    <label>Preço: <input type="number" id="livro-preco" step="0.01" required></label>
+    <label>Estoque: <input type="number" id="livro-estoque" value="0" required></label>
+    <div class="botoes">
+      <button type="submit" id="btn-salvar-livro">Salvar</button>
+      <button type="button" id="btn-cancelar-livro" hidden>Cancelar</button>
+    </div>
+  </form>
+
+  <h2>Lista de Livros</h2>
+  <table id="tabela-livros">
+    <thead>
+      <tr>
+        <th>ID</th><th>Título</th><th>Autor</th><th>Preço</th><th>Estoque</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
+<!-- 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD de Produtos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Cadastro de Produtos</h1>
+
+  <form id="form-produto">
+    <input type="hidden" id="produto-id">
+
+    <label>
+      Nome:
+      <input type="text" id="nome" required>
+    </label>
+
+    <label>
+      Preço:
+      <input type="number" id="preco" step="0.01" required>
+    </label>
+
+    <label>
+      Estoque:
+      <input type="number" id="estoque" value="0" required>
+    </label>
+
+    <div class="botoes">
+      <button type="submit" id="btn-salvar">Salvar</button>
+      <button type="button" id="btn-cancelar" hidden>Cancelar</button>
+    </div>
+  </form>
+
+  <h2>Lista de Produtos</h2>
+  <table id="tabela-produtos">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Preço</th>
+        <th>Estoque</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
+-->
